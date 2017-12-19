@@ -9,4 +9,4 @@ clean:
 	rm -f lib*a *.o
 
 %.o: %.cc
-	$(CXX) -c -I. -Wall $<
+	$(CXX) -std=c++11 -c -I. -Wall $<

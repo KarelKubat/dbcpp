@@ -18,8 +18,8 @@ namespace db {
 
   public:
     Exception(std::string const &desc);
-    ~Exception() _NOEXCEPT;
-    char const *what() const _NOEXCEPT;
+    ~Exception() noexcept;
+    char const *what() const noexcept;
 
   private:
     std::string desc;

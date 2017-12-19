@@ -12,7 +12,7 @@ Transaction &Transaction::prepare(std::string const &sql) {
 
   if ( (sqlite3_prepare_v2(conn.connection(),
 			   sql.c_str(),
-			   strlen(sql.c_str()),
+                           sql.length(),
 			   &stmt,
 			   0)) ) {
     conn.rollback_transaction();

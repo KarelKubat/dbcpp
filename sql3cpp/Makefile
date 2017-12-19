@@ -6,7 +6,7 @@ $(LIB): $(OBJ)
 	ar rvs $(LIB) $(OBJ)
 
 %.o: %.cc
-	$(CXX) -I. -I../dbcpp -c -Wall $<
+	$(CXX) -std=c++11 -I. -I../dbcpp -c -Wall $<
 
 tests: $(LIB) testrun
 

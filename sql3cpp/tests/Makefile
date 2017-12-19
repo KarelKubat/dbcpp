@@ -9,8 +9,8 @@ all: $(TST)
 	 done
 
 %.t: %.cc
-	$(CXX) -I.. -I../../dbcpp -g -Wall -o $@ $< \
-	  -L../../dbcpp -ldbcpp -L.. -lsql3cpp -lsqlite3
+	$(CXX) -std=c++11 -I.. -I../../dbcpp -g -Wall -o $@ $< \
+	  -L../../dbcpp -L.. -lsql3cpp -ldbcpp -lsqlite3
 
 clean:
 	rm -rf *.t *.dSYM/
