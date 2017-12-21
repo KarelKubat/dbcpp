@@ -14,9 +14,9 @@ in all packages and is derived from `std::exception`, so that method
 
 ```c++
 try {
-  mytransaction.prepare(...)
+  mytransaction->prepare(...)->execute();
 } catch (std::exception const &e) {
-  std::cerr << "Oops: " << e << '\n';
+  std::cerr << "Oops: " << e.what() << '\n';
   exit(1);
 }
 ```
@@ -76,8 +76,9 @@ Note how `bind()` and be chained to `prepare()` and to other `bind()`s. In
 fact it can also be chained to `execute()`, but this makes no sense in this
 case as `execute()` is run in a loop.
 
-The first binding binds the first variable, etc.. Binding is implemented for
-the types `int`, `double` and for `std:string`. Other types may follow.
+The first binding binds a value to the first `?` in the SQL statement, the
+second binds a value to the second, etc.. Binding is implemented for the types
+`int`, `double` and for `std:string`. Other types may follow.
 
 Method `execute()` will return `true` as long as there are rows to fetch. To
 extract values from fetched rows, methods `colint()`, `colstr()` and
@@ -129,7 +130,7 @@ trx->prepare("insert into employee (name) values (?)"
 int id = trx->lastid();
 trx->prepare("insert into address (street, city, employee_id) "
              "values (?, ?, ?)")
-   ->bind("Due d'Eglise")->bind("Orleans")->bind(id)
+   ->bind("Rue d'Eglise")->bind("Orleans")->bind(id)
    ->execute();
 ```
 
@@ -151,7 +152,7 @@ create table queue (
 );
 ```
 
-Column `waiting` will be used as sentinel; `action` is some arbitrary task
+Column `waiting` is used as sentinel; `action` is some arbitrary task
 that a worker would need to perform and is not further described here.
 
 In order to add items to the queue, the code would be:
@@ -201,4 +202,117 @@ while (trx->execute()) {
   } else
     std::cout << "Candidate " << task_id << " was already taken\n";
 }
+```
+
+A full working example is provided in the distribution as
+[producer-consumer-queue](../examples/producer-consumer-queue/README.md).
+
+### Controlling the Units of Work
+
+Commit control is most 'natural' on a per-instance level of `db::Transaction`,
+which means that database changes are either committed or rolled back
+when a `db::Transaction` object is destroyed:
+
+```c++
+db::Transaction *trx;
+...
+
+try {
+  trx->prepare("insert into mytable (a, b, c) values (?, ?, ?)")
+     ->bind(1)->bind(2)->bind(3)
+     ->execute();
+  // Transaction has succeeded but is not committed yet
+} catch (db::Exception const &e) {
+  // Transaction failed but is not rolled back yet
+  std::cout << e.what() << '\n';
+}
+
+// Transaction is now committed or rolled back, depending on the
+// success during execution
+delete trx;
+```
+
+A transaction object can be reused for subsequent `prepare()` / `execute()`
+cycles while it is not in an error state. Once an execution throws an error,
+the object is marked for rollback and next reuses are not permitted:
+
+```c++
+// This is correct. The transaction object is reused and all statements
+// will either succeed or fail.
+
+db::Transaction *trx;
+
+...
+
+try {
+  trx->prepare("insert into mytable (a, b, c) values (?, ?, ?)")
+     ->bind(1)->bind(2)->bind(3)
+     ->execute();
+  trx->prepare("insert into mytable (a, b, c) values (?, ?, ?)")
+     ->bind(4)->bind(5)->bind(6)
+     ->execute();
+  trx->prepare("insert into mytable (a, b, c) values (?, ?, ?)")
+     ->bind(7)->bind(8)->bind(9)
+     ->execute();
+} catch (db::Exception const &e) {
+  // An execution above has failed. All will be rolled back.
+  std::cout << e.what() << '\n';
+}
+
+...
+
+delete trx;
+```
+
+The following however is incorrect. Inside the `catch` block, the transaction
+object is in an error state and may not be reused:
+
+```c++
+// This is incorrect. The transaction object cannot be reused in the catch
+// block since it is in an error state.
+
+db::Transaction *trx;
+...
+
+try {
+  trx->prepare("insert into mytable (a, b, c) values (?, ?, ?)")
+     ->bind(1)->bind(2)->bind(3)
+     ->execute();
+  trx->prepare("insert into mytable (a, b, c) values (?, ?, ?)")
+     ->bind(4)->bind(5)->bind(6)
+     ->execute();
+  trx->prepare("insert into mytable (a, b, c) values (?, ?, ?)")
+     ->bind(7)->bind(8)->bind(9)
+     ->execute();
+} catch (db::Exception const &e) {
+  std::cout << "There are now "
+            << trx->prepare("select count(*) from mytable")
+                  ->execute()->colint()
+            << " rows in mytable\n";
+}
+...
+delete trx;
+```
+
+Destroying transaction objects in order to force commit control may not always
+be the most elegant approach. For this method `finish()` exists which:
+
+* Either commits or rolls back the transaction
+* Resets any error state.
+
+For example:
+
+```c++
+// Insert some values
+trx->prepare("insert into mytable (a, b, c) values (?, ?, ?)")
+   ->bind(1)->bind(2)->bind(3)
+   ->execute();
+
+// Make sure the above is committed even when the below would fail
+trx->finish();
+
+// Insert some more
+trx->prepare("insert into mytable (a, b, c) values (?, ?, ?)")
+   ->bind(4)->bind(5)->bind(6)
+   ->execute();
 ```

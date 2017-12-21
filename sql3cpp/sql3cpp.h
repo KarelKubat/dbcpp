@@ -7,6 +7,7 @@
 
 #include <exception>
 #include <map>
+#include <mutex>
 #include <string>
 
 #include <sqlite3.h>
@@ -37,10 +38,11 @@ namespace sql3 {
   private:
     void exec_sql(std::string const &sql);
     void check_connected() const;
-    
-    sqlite3 *db;
-    static std::map<sqlite3*, int> usage_map;
+
+    sqlite3                         *db;
+    static std::map<sqlite3*, int>  usage_map;
     static std::map<sqlite3*, bool> in_transaction_map;
+    static std::mutex               trx_map_change_mutex;
   };
 
   /*
