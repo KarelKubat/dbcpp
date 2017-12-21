@@ -101,7 +101,7 @@ they are found, as opposed to creating 100 tasks and stopping.
 Function `consumer()` is started as a thread, with concurrent consumer threads
 running at the same time. Each consumer must try to pick up a task, but it
 must make sure that it doesn't pick up a task that another consumer is also
-working on. There is a race condition.
+working on. A potential race condition exists that must be avoided.
 
 There is a number of possibilities to avoid racing:
 
@@ -116,21 +116,37 @@ There is a number of possibilities to avoid racing:
 *  But since we are talking about databases, let's avoid racing conditions
    using the database. 
    
-Some databases offer possibilities to lock tables, but Sqlite3 doesn't. One
-possible work-around, which is shown here, is the following.
+Some databases offer possibilities to lock tables or even rows, but Sqlite3
+doesn't. One possible work-around, which is shown here, is the following.
 
-1. Each consumer selects candidates for pickup using `select queue_id, task
-   from queue where waiting = 1 order by queue_id`. The `where` clause 
+1. Each consumer selects candidates for pickup using
+
+   ```sql
+   select queue_id, task
+   from   queue 
+   where waiting = 1 
+   order by queue_id
+   ``` 
+   
+   The `where` clause 
    filters out already picked up tasks. The `order` clause ensures that the
    earliest tasks are picked up first (but this isn't required to make the
    consumer work correctly).
+   
 1. Each queue row in this list can be **potentially** picked up and processed,
    but only if its `waiting` column is still 1. Another consumer might have
    picked up this task already. To ensure that only one consumer takes the
-   task, an atomic update is performed: `update queue set waiting=0 where 
-   waiting=1 and queue_id=?`. If this update affects a row, then we can
-   be sure that the waiting flag was still 1 at the time of the update, and
-   hence we can be sure that no other consumer picked up the task as well.
+   task, an atomic update is performed:
+   
+   ```sql
+   update queue 
+   set    waiting=0 
+   where  waiting=1 and queue_id=?
+   ```
+   
+   If this update affects a row, then we can be sure that the waiting flag was
+   still 1 at the time of the update, and hence we can be sure that no other
+   consumer picked up the task as well.
    
 The code that expresses this is the following:
 

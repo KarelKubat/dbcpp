@@ -5,7 +5,10 @@ Package `db` implements two things:
 *  Exceptions that all backend-dependent implementations throw
 *  Class `db::Transaction` that defines how all backend implementations run
    queries and how commit control is organized.
-   
+
+In order to compile this, you can type `make`. Invoking `make clean` removes
+build artifacts.
+
 ## db::Exception
 
 `db::Exception` is the overall exception type. It is used to signal errors
@@ -139,7 +142,7 @@ trx->prepare("insert into address (street, city, employee_id) "
 Verifying that an update operation affects one or more rows can be important
 in e.g. systems where one process adds work items into a queue and where
 several workers get items from the queue and where it is necessary to ensure
-that only one worker picks up an item (and not two or more). 
+that only one worker picks up an item (and not two or more).
 
 This example assumes that there is a table `queue` with the following
 layout:
