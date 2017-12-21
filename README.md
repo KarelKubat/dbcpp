@@ -56,7 +56,7 @@ simple objects. For example, in the case of Sqlite3:
 sql3::Connection conn("/where/ever/file.db");
 sql3::Transaction trx(conn);
 
-trx.prepare("INSERT INTO mytable (birthyear, name) VALUES (?, ?)")
+trx.prepare("INSERT INTO historical_figures (birthyear, name) VALUES (?, ?)")
    .bind(1412)
    .bind("Jeanne d'Arc")
    .execute();
@@ -88,7 +88,7 @@ switch (b) {
     break;
 }
 
-trx->prepare("INSERT INTO mytable (birthyear, name) VALUES (?, ?)")
+trx->prepare("INSERT INTO historical_figures (birthyear, name) VALUES (?, ?)")
    ->bind(1412)
    ->bind("Jeanne d'Arc")
    ->execute();
@@ -98,7 +98,14 @@ trx->prepare("INSERT INTO mytable (birthyear, name) VALUES (?, ?)")
 delete trx;
 ```
 
-### Linking Your Programs
+### Compiling and Linking Your Programs
+
+There are a few occurrences of keywords requiring C++11. You probably need
+to reflect this in the compilation stage. In the case of g++ this is:
+
+```shell
+c++ -std=c++11 ...
+```
 
 Note that in the linkage stage of your programs you will need the appropriate
 library for each back end that you are planning to use. For example, for Sqlite3
