@@ -1,16 +1,19 @@
-# sql3: db-compliant implementation for Sqlite3
+# sql3: db-compliant Implementation for Sqlite3
 
 Package `sql3` implements the transactional database API for Sqlite3 as
 specified by package `db`. Since Sqlite3 has commit-control on database
 connection level, there is also a representation of such connections.
 
 This description only shows the `sql3` specifics. For a more thorough
-description of the API please refer to the package [dbpcpp](../dbcpp/). There
+description of the API please refer to the package [dbcpp](../dbcpp/). There
 are also [examples](../examples) that you can follow.
 
 In order to compile this, you can type `make` in this directory, which creates
 the library and runs tests. `make clean` removes artifacts. A prerequisite is
-that the Sqlite3 development package is installed on your system. For Debian-based systems this can be achieved using `apt-get install libsqlite3-dev`.
+that the Sqlite3 development package is installed on your system. For
+Debian-based systems this can be achieved using `apt-get install
+libsqlite3-dev`. In order to install, use the top-level `Makefile` of this
+project.
 
 ## sql3::Connection
 
@@ -40,7 +43,10 @@ Example                     | Means
 `file:///path/my.db?mode=ro`| Read-only mode
 
 Class `sql3::Connection` has a number of other public methods which are
-used in `sql3::Transaction` (see below) but may be usable in another context:
+used in `sql3::Transaction` (see below) but may be usable in another context.
+If you use this class in connection with `sql3::Transaction`, which you 
+most probably will, then using these methods is discouraged because this 
+functionality is managed by the transaction interface.
 
 *  `void disconnect()`: Commits or rolls back the transaction and disconnects
 *  `bool connected() const`: Returns `true` when connected
