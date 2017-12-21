@@ -122,9 +122,9 @@ doesn't. One possible work-around, which is shown here, is the following.
 1. Each consumer selects candidates for pickup using
 
    ```sql
-   select queue_id, task
-   from   queue 
-   where waiting = 1 
+   select   queue_id, task
+   from     queue 
+   where    waiting = 1 
    order by queue_id
    ``` 
    

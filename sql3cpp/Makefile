@@ -1,9 +1,21 @@
 SRC = $(wildcard *.cc)
 OBJ = $(patsubst %.cc, %.o, $(SRC))
 LIB = libsql3cpp.a
+HDR = sql3cpp.h
 
-$(LIB): $(OBJ)
-	ar rvs $(LIB) $(OBJ)
+$(LIB): $(OBJ) dbcppobj
+	ar rvs $(LIB) $(OBJ) ../dbcpp/*.o
+
+dbcppobj:
+	make -C ../dbcpp
+
+install: $(LIBDIR)/$(LIB) $(INCDIR)/$(HDR)
+
+$(LIBDIR)/$(LIB): $(LIB)
+	cp $< $@
+
+$(INCDIR)/$(HDR): $(HDR)
+	cp $< $@
 
 %.o: %.cc
 	$(CXX) -std=c++11 -I. -I../dbcpp -c -Wall $<

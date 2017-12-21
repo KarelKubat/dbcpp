@@ -8,9 +8,12 @@ all: $(TST)
 		$$t || exit 1; \
 	 done
 
+install:
+	@echo "No 'make install' needed in sql3cpp/tests."
+
 %.t: %.cc
 	$(CXX) -std=c++11 -I.. -I../../dbcpp -g -Wall -o $@ $< \
-	  -L../../dbcpp -L.. -lsql3cpp -ldbcpp -lsqlite3
+	   -L.. -lsql3cpp -lsqlite3
 
 clean:
 	rm -rf *.t *.dSYM/
