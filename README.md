@@ -56,7 +56,7 @@ simple objects. For example, in the case of Sqlite3:
 sql3::Connection conn("/where/ever/file.db");
 sql3::Transaction trx(conn);
 
-trx.prepare("INSERT INTO mytable (birtyear, name) VALUES (?, ?)")
+trx.prepare("INSERT INTO mytable (birthyear, name) VALUES (?, ?)")
    .bind(1412)
    .bind("Jeanne d'Arc")
    .execute();
@@ -64,9 +64,10 @@ trx.prepare("INSERT INTO mytable (birtyear, name) VALUES (?, ?)")
 
 ### Preparing for Runtime Backend Choice
 
-If your program would need to connect to any available backend, then you
-may use the class `db:Transaction` to execute against any backend. That will
-require access pointers:
+If your program would need to decide at runtime to which backend to connect,
+then may use the class `db:Transaction` to execute against any backend. This
+situation is unlikely, but the fact that a backend-independent interface exists
+makes it possible. This approach would require access via pointers:
 
 ```c++
 #include <sql3cpp.h>
@@ -87,7 +88,7 @@ switch (b) {
     break;
 }
 
-trx->prepare("INSERT INTO mytable (birtyear, name) VALUES (?, ?)")
+trx->prepare("INSERT INTO mytable (birthyear, name) VALUES (?, ?)")
    ->bind(1412)
    ->bind("Jeanne d'Arc")
    ->execute();
