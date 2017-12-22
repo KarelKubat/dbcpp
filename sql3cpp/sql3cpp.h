@@ -36,13 +36,12 @@ namespace sql3 {
     sqlite3 *connection();
 
   private:
-    void exec_sql(std::string const &sql);
+    int exec_sql(std::string const &sql);
     void check_connected() const;
 
     sqlite3                         *db;
     static std::map<sqlite3*, int>  usage_map;
-    static std::map<sqlite3*, bool> in_transaction_map;
-    static std::mutex               trx_map_change_mutex;
+    static std::mutex               connection_mutex;
   };
 
   /*

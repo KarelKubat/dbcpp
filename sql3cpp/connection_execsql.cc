@@ -4,13 +4,13 @@
 
 using namespace sql3;
 
-void Connection::exec_sql(std::string const &sql) {
-  check_connected();
+int Connection::exec_sql(std::string const &sql) {
+  int ret;
+  sqlite3_stmt *stmt;
 
-  char *errmsg;
-  if (sqlite3_exec(db, sql.c_str(), 0, 0, &errmsg)) {
-    std::ostringstream os;
-    os << sql << " failed: " << errmsg;
-    throw db::Exception(os.str());
-  }
+  check_connected();
+  if ( (ret = sqlite3_prepare(connection(), sql.c_str(), sql.length(),
+                              &stmt, 0)) )
+    return ret;
+  return sqlite3_step(stmt);
 }

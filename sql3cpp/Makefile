@@ -13,9 +13,11 @@ install: $(LIBDIR)/$(LIB) $(INCDIR)/$(HDR)
 
 $(LIBDIR)/$(LIB): $(LIB)
 	cp $< $@
+	chmod 644 $<
 
 $(INCDIR)/$(HDR): $(HDR)
 	cp $< $@
+	chmod 644 $<
 
 %.o: %.cc
 	$(CXX) -std=c++11 -I. -I../dbcpp -c -Wall $<

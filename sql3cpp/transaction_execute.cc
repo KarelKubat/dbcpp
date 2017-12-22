@@ -21,7 +21,7 @@ bool Transaction::execute() {
   // Check for errors
   if (ret != SQLITE_ROW && ret != SQLITE_DONE) {
     conn.rollback_transaction();
-      
+
     std::ostringstream os;
     os << "execution failure: " << sqlite3_errmsg(conn.connection());
     throw db::Exception(os.str());
