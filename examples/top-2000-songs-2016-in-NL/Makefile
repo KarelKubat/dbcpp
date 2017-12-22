@@ -11,4 +11,4 @@ top2000.db: top2000.sql
 	perl loadlist.pl top2000list.txt
 
 clean:
-	rm -f top2000.db top2000
+	rm -rf top2000.db top2000 *.dSYM

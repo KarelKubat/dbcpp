@@ -33,40 +33,49 @@ void producer() {
 }
 
 void consumer() {
-  sql3::Transaction sel(conn);
+  try {
+    sql3::Transaction sel(conn);
 
-  sel.prepare("select queue_id,task "
-              "from queue "
-              "where waiting = 1 "
-              "order by queue_id");
-  while (sel.execute()) {
-    sql3::Transaction upd(conn);
+    sel.prepare("select   queue_id,task "
+		"from     queue "
+		"where    waiting = 1 "
+		"order by queue_id");
+    while (sel.execute()) {
+      sql3::Transaction upd(conn);
 
-    upd.prepare("update queue set waiting=0 where waiting=1 and queue_id=?")
+      upd.prepare("update queue set waiting=0 where waiting=1 and queue_id=?")
         .bind(sel.colint(0))
         .execute();
-    if (upd.affectedrows() > 0) {
-      std::this_thread::sleep_for(
-          std::chrono::milliseconds(100 + rand() % 300));
-      std::cout << "Thread " << std::this_thread::get_id()
-                << " has finished task " << sel.colstr(1) << '\n';
+      if (upd.affectedrows() > 0) {
+	std::this_thread::sleep_for(
+	    std::chrono::milliseconds(100 + rand() % 300));
+	std::cout << "Thread " << std::this_thread::get_id()
+		  << " has finished task " << sel.colstr(1) << '\n';
+      }
     }
+  } catch (std::exception const &e) {
+    std::cerr << "Consumer exception: " << e.what() << '\n';
   }
 }
 
 int main() {
-  conn = new sql3::Connection(":memory:");
+  try {
+    conn = new sql3::Connection(":memory:");
 
-  setup();
-  producer();
+    setup();
+    producer();
 
-  std::thread a(consumer);
-  std::thread b(consumer);
-  std::thread c(consumer);
-
-  a.join();
-  b.join();
-  c.join();
-
+    std::thread a(consumer);
+    std::thread b(consumer);
+    std::thread c(consumer);
+  
+    a.join();
+    b.join();
+    c.join();
+  } catch (std::exception const &e) {
+    std::cerr << "Main exception: " << e.what() << '\n';
+    return 1;
+  }
+  
   return 0;
 }
