@@ -13,7 +13,7 @@ void func(sql3::Connection x) {
 
 int main() {
   sql3::Connection c;
-  
+
   c.connect(":memory:");
   assert(c.connected());
 
@@ -33,4 +33,3 @@ int main() {
 
   return 0;
 }
-    

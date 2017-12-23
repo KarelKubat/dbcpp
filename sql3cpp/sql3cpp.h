@@ -39,9 +39,7 @@ namespace sql3 {
     int exec_sql(std::string const &sql);
     void check_connected() const;
 
-    sqlite3                         *db;
-    static std::map<sqlite3*, int>  usage_map;
-    static std::mutex               connection_mutex;
+    sqlite3 *db;
   };
 
   /*
@@ -83,6 +81,8 @@ namespace sql3 {
     int pos;
     int busy_retries, busy_wait_ms;
     bool error_seen;
+    int affected_rows;
+    std::string last_sql;
 
     void check_error();
   };

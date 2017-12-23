@@ -23,7 +23,8 @@ Transaction &Transaction::prepare(std::string const &sql) {
     throw db::Exception(os.str());
   }
 
-  // Reset position for next binds
+  // Reset position for next binds and remember the SQL statement
   pos = 0;
+  last_sql = sql;
   return *this;
 }

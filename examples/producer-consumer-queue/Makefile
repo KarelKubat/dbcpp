@@ -8,4 +8,4 @@ producer-consumer-queue: producer-consumer-queue.cc
 	       -L../../sql3cpp -lsql3cpp -lsqlite3
 
 clean:
-	rm -rf producer-consumer-queue *.dSYM
+	rm -rf producer-consumer-queue *.dSYM queue.db*

@@ -13,14 +13,8 @@ void Connection::connect(std::string const &fname) {
   // Connect to the new source.
   if ( (ret = sqlite3_open(fname.c_str(), &db)) ) {
     std::ostringstream os;
-    os << "cannot open '" << fname << "': " << sqlite3_errmsg(db)
+    os << "cannot connect to '" << fname << "': " << sqlite3_errmsg(db)
        << ", code " << ret;
     throw db::Exception(os.str());
   }
-
-  connection_mutex.lock();
-  if (usage_map.count(db) == 0)
-    usage_map[db] = 0;
-  ++usage_map[db];
-  connection_mutex.unlock();
 }

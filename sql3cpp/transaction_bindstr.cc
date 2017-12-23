@@ -13,7 +13,8 @@ Transaction &Transaction::bind(std::string const &str) {
 
     std::ostringstream os;
     os << "failed to bind string '" << str << "' to pos " << pos << ": "
-       << sqlite3_errmsg(conn.connection()) << ", code " << ret;
+       << sqlite3_errmsg(conn.connection()) << ", code " << ret
+       << ", sql " << last_sql;
     throw db::Exception(os.str());
   }
   return *this;

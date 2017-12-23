@@ -1,4 +1,5 @@
 #include <chrono>
+#include <mutex>
 #include <thread>
 #include <sstream>
 #include <sql3cpp.h>
@@ -6,13 +7,22 @@
 using namespace sql3;
 
 bool Transaction::execute() {
+  static std::mutex m;
+  
   // Make sure that we are not already in an error state.
   check_error();
 
   // Incase of database busy, retry up to configured nr of times.
   int ret;
   for (int i = 0; i < busy_retries; ++i) {
-    if ( (ret = sqlite3_step(stmt)) != SQLITE_BUSY )
+    // The # of affected rows is on the connection level. We need to fetch
+    // this as soon as the statement executes.
+    m.lock();
+    ret = sqlite3_step(stmt);
+    affected_rows = sqlite3_changes(conn.connection());
+    m.unlock();
+    
+    if (ret != SQLITE_BUSY)
       break;
     std::this_thread::sleep_for
       (std::chrono::milliseconds(busy_wait_ms * 1000));
@@ -23,7 +33,8 @@ bool Transaction::execute() {
     conn.rollback_transaction();
 
     std::ostringstream os;
-    os << "execution failure: " << sqlite3_errmsg(conn.connection());
+    os << "execution failure: " << sqlite3_errmsg(conn.connection())
+       << ", sql " << last_sql;
     throw db::Exception(os.str());
   }
 
