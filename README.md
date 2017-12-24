@@ -32,7 +32,7 @@ If you wish to change these paths during installation, then you may invoke
 `make` as follows:
 
 ```shell
-BIDIR=/where/ever/lib INCDIR=/where/ever/inc make install
+LIBDIR=/where/ever/lib INCDIR=/where/ever/inc make install
 ```
 
 ## Structure of Your Own Programs

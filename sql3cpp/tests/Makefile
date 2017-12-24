@@ -16,7 +16,7 @@ install:
 	   -L.. -lsql3cpp -lsqlite3
 
 clean:
-	rm -rf *.t *.dSYM/
+	rm -rf *.t *.dSYM/ *.db
 
 # extra deps
 connection.t: connection.cc ../libsql3cpp.a ../sql3cpp.h

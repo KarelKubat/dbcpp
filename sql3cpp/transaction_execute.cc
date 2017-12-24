@@ -24,8 +24,7 @@ bool Transaction::execute() {
     
     if (ret != SQLITE_BUSY)
       break;
-    std::this_thread::sleep_for
-      (std::chrono::milliseconds(busy_wait_ms * 1000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(busy_wait_ms));
   }
 
   // Check for errors
@@ -33,7 +32,7 @@ bool Transaction::execute() {
     conn.rollback_transaction();
 
     std::ostringstream os;
-    os << "execution failure: " << sqlite3_errmsg(conn.connection())
+    os << "execution failure: " << sqlite3_errstr(ret)
        << ", sql " << last_sql;
     throw db::Exception(os.str());
   }

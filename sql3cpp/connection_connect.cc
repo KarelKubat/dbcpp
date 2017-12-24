@@ -17,4 +17,10 @@ void Connection::connect(std::string const &fname) {
        << ", code " << ret;
     throw db::Exception(os.str());
   }
+  
+  #ifdef DEBUG
+  std::cout << "connection " << db << " connected\n";
+  #endif
+  
+  increfcount();
 }

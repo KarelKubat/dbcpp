@@ -7,12 +7,17 @@
 
 #include <exception>
 #include <map>
+#include <memory>
 #include <mutex>
 #include <string>
 
 #include <sqlite3.h>
 
 #include <dbcpp.h>
+
+// Define DEBUG to trace connection reference counting, connecting and
+// disconnecting.
+// #define DEBUG
 
 namespace sql3 {
 
@@ -23,7 +28,10 @@ namespace sql3 {
   public:
     Connection();
     Connection(std::string const &fname);
+    Connection(Connection const &other);
     ~Connection();
+
+    Connection const &operator=(Connection const &other);
 
     void connect(std::string const &fname);
     void disconnect();
@@ -40,6 +48,10 @@ namespace sql3 {
     void check_connected() const;
 
     sqlite3 *db;
+    static std::map<sqlite3 *, int> *refcount;
+    static std::mutex refmutex;
+    void increfcount() const;
+    bool decrefcount() const;
   };
 
   /*
